@@ -37,7 +37,7 @@ const MainScreen = function () {
         </Typography>
       </MainContainer>
       <MainContainer>
-        <img src='./assets/img/anon.jpg' alt="" />
+        <img className="w-100" src='./assets/img/anon.jpg' alt="" />
       </MainContainer>
     </>
   );
