@@ -1,5 +1,5 @@
 import { Routes, Route, useLocation } from "react-router-dom";
-import MainScreen from "./components/Home";
+import Home from "./components/Home";
 
 import { Layout } from "./components/Layout";
 require("./index.css");
@@ -10,7 +10,7 @@ function App() {
     <>
       <Routes> 
         <Route path="/"  element={<Layout/>}>
-          <Route index element={<MainScreen />} />
+          <Route index element={<Home />} />
         </Route>
         {/* <Route element={<Layout header={true} />}></Route> */}
       </Routes>

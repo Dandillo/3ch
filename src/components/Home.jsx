@@ -2,10 +2,7 @@ import React, { Component } from "react";
 import { styled } from "@mui/material/styles";
 import Paper from "@mui/material/Paper";
 import { Link } from "react-router-dom";
-import Card from "@mui/material/Card";
-import Button from "@mui/material/Button";
-import Container from "@mui/material/Container";
-import Grid from "@mui/material/Grid";
+import MainContainer from './utils/MainContainer'
 import { Typography } from "@mui/material";
 import { Box } from "@mui/system";
 import Logo from '../assets/svg/3ch@1x.svg';
@@ -19,21 +16,29 @@ const MainScreen = function () {
   }));
   return (
     <>
-    <Box sx={{maxWidth:'940px'}}>
+      <MainContainer>
         <img src={Logo} alt="" />
-      </Box>  
+      </MainContainer>
 
-      <Box sx={{maxWidth:'940px'}}>
-        <Typography align='center' variant="body1" gutterBottom sx={{color:'#cccccc'}}>
-          <strong>Два.ч</strong> - это система форумов, где можно общаться быстро и свободно, где
-          любая точка зрения имеет право на жизнь. Здесь нет регистрации и
-          подписываться не нужно, хотя это не избавляет вас от необходимости
-          соблюдать правила. Все форумы (кроме /Б/реда), а их список находится
-          снизу, имеют собственную чётко ограниченную тематику. Словом, всё, что
-          не запрещено правилами отдельно взятого форума и относится к его
-          тематике, на этом форуме разрешено.
+      <MainContainer>
+        <Typography
+          align="center"
+          variant="body1"
+          gutterBottom
+          sx={{ color: "#cccccc" }}
+        >
+          <strong>Два.ч</strong> - это система форумов, где можно общаться
+          быстро и свободно, где любая точка зрения имеет право на жизнь. Здесь
+          нет регистрации и подписываться не нужно, хотя это не избавляет вас от
+          необходимости соблюдать правила. Все форумы (кроме /Б/реда), а их
+          список находится снизу, имеют собственную чётко ограниченную тематику.
+          Словом, всё, что не запрещено правилами отдельно взятого форума и
+          относится к его тематике, на этом форуме разрешено.
         </Typography>
-      </Box>
+      </MainContainer>
+      <MainContainer>
+        <img src='./assets/img/anon.jpg' alt="" />
+      </MainContainer>
     </>
   );
 };
