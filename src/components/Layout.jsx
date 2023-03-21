@@ -5,7 +5,7 @@ import Container  from "@mui/material/Container";
 
 const Layout = (props) => {
   return (
-    <Container maxWidth="sm">
+    <Container sx={{display:'flex',flexDirection:'column',alignItems:'center'}}>
         <Outlet />
     </Container>
   );
