@@ -3,6 +3,7 @@ import Home from "./components/Home";
 
 import { Layout } from "./components/Layout";
 import { ThreadLayout } from "./components/ThreadLayout";
+
 require("./index.css");
 function App() {
   let location = useLocation();
