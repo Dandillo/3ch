@@ -8,7 +8,7 @@ import Container from "@mui/material/Container";
 import Grid from "@mui/material/Grid";
 import { Typography } from "@mui/material";
 import { Box } from "@mui/system";
-
+import Logo from '../assets/svg/3ch@1x.svg';
 const MainScreen = function () {
   const Item = styled(Paper)(({ theme }) => ({
     backgroundColor: theme.palette.mode === "dark" ? "#1A2027" : "#fff",
@@ -19,7 +19,9 @@ const MainScreen = function () {
   }));
   return (
     <>
-  
+    <Box sx={{maxWidth:'940px'}}>
+        <img src={Logo} alt="" />
+      </Box>  
 
       <Box sx={{maxWidth:'940px'}}>
         <Typography align='center' variant="body1" gutterBottom sx={{color:'#cccccc'}}>
