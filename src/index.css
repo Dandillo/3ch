@@ -17,3 +17,7 @@ code {
 .w-100 {
   width: 100%;
 }
+.header-home {
+    padding-top: 20px;
+    padding-bottom: 50px;
+}
