@@ -1,11 +1,14 @@
-import { signalR } from signalR
+import { signalR } from '@microsoft/signalr';
 export default class Hub{
 
     Hub(url = "http://http://176.124.193.22/CommentHub"){
         this.connection = new signalR.HubConnectionBuilder().withUrl(url).build();
-        connection.start().then().catch(function (err) {
+        this.connection
+          .start()
+          .then()
+          .catch(function (err) {
             return console.error(err.toString());
-        });
+          });
     }
 
     initRecieveComment(func){

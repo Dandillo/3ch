@@ -1,14 +1,32 @@
-import React, { Component } from "react";
-import { styled } from "@mui/material/styles";
-import Paper from "@mui/material/Paper";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import MainContainer from './utils/MainContainer'
-import { Typography } from "@mui/material";
-import { Stack } from "@mui/material";
-import { Box } from "@mui/system";
-import Logo from '../assets/svg/3ch@1x.svg';
-const MainScreen = function () {
-
+import MainContainer from "./utils/MainContainer";
+import {
+  Grid,
+  Typography,
+  Box,
+  Stack,
+  Backdrop,
+  CircularProgress,
+} from "@mui/material";
+import Logo from "../assets/svg/3ch@1x.svg";
+import tagService from "../services/tags.service";
+const Home = function () {
+  const [tags, setTags] = useState([]);
+  const [isHover, setIsHover] = useState(false);
+  const boxStyle = {
+    textDecoration: "none",
+    backgroundColor: isHover ? "lightblue" : "rgb(0, 191, 255)",
+  };
+  const handleMouseEnter = () => {
+    setIsHover(true);
+  };
+  const handleMouseLeave = () => {
+    setIsHover(false);
+  };
+  useEffect(() => {
+    tagService.getTags(0, 100).then((tags) => setTags(tags));
+  }, []);
   return (
     <>
       <header className="header-home">
@@ -45,9 +63,35 @@ const MainScreen = function () {
         <MainContainer>
           <img className="w-100" src="./assets/img/anon.jpg" alt="" />
         </MainContainer>
+        <MainContainer>
+          <Typography
+            align="center"
+            paragraph
+            gutterBottom
+            sx={{ color: "#FFFF" }}
+          >
+            Тематика
+          </Typography>
+          <Grid container>
+            {tags.map((tag, pos) => (
+              <Grid item key={pos} className="w-100">
+                <Link
+                  to={tag.shortName}
+                  style={({ textDecoration: "none" }, boxStyle)}
+                  onMouseEnter={handleMouseEnter}
+                  onMouseLeave={handleMouseLeave}
+                >
+                  <Typography paragraph gutterBottom sx={{ color: "#ffcb29" }}>
+                    {tag.name}
+                  </Typography>
+                </Link>
+              </Grid>
+            ))}
+          </Grid>
+        </MainContainer>
       </Stack>
     </>
   );
 };
 
-export default MainScreen;
+export default Home;
