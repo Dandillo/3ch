@@ -9,11 +9,14 @@ import {
   IconButton,
   Divider,
   Box,
+  CircularProgress,
   Stack,
 } from "@mui/material/";
-import { Link } from "react-router-dom";
-import ArrowForwardIosRoundedIcon from "@mui/icons-material/ArrowForwardIosRounded";
+import { Link, useParams } from "react-router-dom";
+import { motion } from "framer-motion";
 import commentsService from "../services/comment.service";
+
+import postService from "../services/post.service";
 const formatDate = (dateUTC) => {
   let options = {
     weekday: "long",
@@ -26,76 +29,79 @@ const formatDate = (dateUTC) => {
   let date = new Date(dateUTC);
   return date.toLocaleDateString("ru-RU", options);
 };
-const ThreadCard = ({ title, content, date, id }) => {
+const PostLayout = (props) => {
+  const { id } = useParams();
   const [postDate, setPostDate] = useState("");
+  const [post, setPost] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [comments, setComments] = useState([]);
+  const threadName = props.threadName;
   useEffect(() => {
-    setPostDate(formatDate(date));
-    commentsService
-      .getCommentsByPostID(id, 0, 100)
-      .then((comments) => setComments(comments));
-  }, []);
-  return (
-    <Box sx={{ width: "100%" }}>
+    console.log(props.threadName);
+    
+      // props.setThreadName(threadName);
+    setLoading(true);
+    postService.getPostById(id).then((post) => {
+      setPost(post);
+    });
+    commentsService.getCommentsByPostID(id, 0, 100).then((comments) => {
+      setComments(comments);
+      setLoading(false);
+    });
+    setPostDate(formatDate(post.date));
+   
+
+  }, [post.date, id]);
+  const RenderCard = () => {
+    return (
       <Stack spacing={2}>
-        <Card
-          sx={{
-            borderRadius: "10px",
-            minWidth: "100%",
-          }}
-        >
+        <Card sx={{ borderRadius: "10px", minWidth: "100%" }}>
           <CardHeader
             title={
               <Box>
-                <Typography variant="h5" className="post-title">
-                  <Box>
-                    <Link to={`post/${id}`}>{title}</Link>
-                    <Typography
-                      variant="body1"
-                      component={"span"}
-                      sx={{ paddingLeft: "10px" }}
-                    >
-                      Аноним {postDate} №{id}
-                    </Typography>
-                  </Box>
-                  <Link to={`post/${id}`}>
-                    <IconButton>
-                      <ArrowForwardIosRoundedIcon />
-                    </IconButton>
-                  </Link>
+                <Typography variant="h5">
+                  <span className="postLayout_heading"> {post.heading}</span>
+
+                  <Typography
+                    variant="body1"
+                    component={"span"}
+                    sx={{ paddingLeft: "10px" }}
+                  >
+                    Аноним {postDate} №{id}
+                  </Typography>
                 </Typography>
               </Box>
             }
           />
-
           <Divider />
           <CardContent sx={{ textAlign: "justify" }}>
-            <Typography variant="body1">{content}</Typography>
+            <Typography variant="body1">{post.content}</Typography>
           </CardContent>
+          <CardActions sx={{ justifyContent: "flex-end" }}>
+            <IconButton></IconButton>
+          </CardActions>
         </Card>
-
         {comments.length > 0 ? (
           comments.map((comment, i) => (
             <Card
               sx={{
                 borderRadius: "10px",
-                maxWidth: "70%",
+                minWidth: "100%",
               }}
-              key={i}
             >
               <CardHeader
                 title={
                   <Box>
                     <Typography variant="h5" className="post-title">
-                   
+                      <Box>
                         <Typography
                           variant="body1"
                           component={"span"}
                           sx={{ paddingLeft: "10px" }}
                         >
-                        Аноним №{comment.id}
+                          Аноним {comment.date} №{comment.id}
                         </Typography>
-               
+                      </Box>
                     </Typography>
                   </Box>
                 }
@@ -103,7 +109,7 @@ const ThreadCard = ({ title, content, date, id }) => {
 
               <Divider />
               <CardContent sx={{ textAlign: "justify" }}>
-                <Typography variant="body1">{comment.comment}</Typography>
+                <Typography variant="body1">{comment.content}</Typography>
               </CardContent>
             </Card>
           ))
@@ -122,8 +128,25 @@ const ThreadCard = ({ title, content, date, id }) => {
           </Card>
         )}
       </Stack>
-    </Box>
+    );
+  };
+  return (
+    <>
+      {!loading ? (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{
+            duration: 0.3,
+          }}
+        >
+          <RenderCard />
+        </motion.div>
+      ) : (
+        <div />
+      )}
+    </>
   );
 };
 
-export default ThreadCard;
+export default PostLayout;

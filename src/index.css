@@ -40,3 +40,15 @@ code {
   flex-direction: column;
   justify-content: flex-end;
 }
+a,.postLayout_heading {
+ 
+  color: #ffa229;
+}
+a:hover {
+  color: #e2870f;
+}
+.post-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}

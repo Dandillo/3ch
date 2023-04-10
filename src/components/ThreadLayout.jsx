@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { useLocation, useNavigation, useParams, Link } from "react-router-dom";
+import {
+  useLocation,
+  useNavigation,
+  useParams,
+  Link,
+  Outlet,
+} from "react-router-dom";
 import {
   Typography,
   Box,
@@ -23,11 +29,13 @@ import {
 import MenuIcon from "@mui/icons-material/Menu";
 import { width } from "@mui/system";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { signalR } from "@microsoft/signalr";
 import ThreadCard from "./ThreadCard";
 import tagService from "../services/tags.service";
+import { motion } from "framer-motion";
+
 import postService from "../services/post.service";
 import Logo from "../assets/svg/3ch@1x.svg";
+
 const darkTheme = createTheme({
   palette: {
     mode: "dark",
@@ -41,12 +49,16 @@ const darkTheme = createTheme({
   },
 });
 const drawerWidth = 240;
+var list = [];
 const ThreadLayout = (props) => {
-  const { threadName } = useParams();
+ 
   const [tags, setTags] = useState([]);
   const location = useLocation();
-  const [thread, setThread] = useState(props.thread);
+  const [threadName, setThreadName] = useState(
+    ''
+  );
   const [Posts, SetPosts] = useState([]);
+  const [selectedThread, setSelectedThread] = useState("");
   const [openForm, setOpenForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const handleSubmit = (event) => {
@@ -64,18 +76,23 @@ const ThreadLayout = (props) => {
   };
   useEffect(() => {
     setLoading(true);
+    // props.hubConnection.on("RecieveComment", (message) => {
+    //   list.push(message);
+    // });
     tagService.getTags(0, 100).then((tags) => setTags(tags));
-    setThread(props.thread);
+    console.log(props.thread);
+    setThreadName(props.thread);
     postService
       .getPostsByTag(props.thread.shortName, 0, 100)
       .then((posts) => SetPosts(posts));
     setLoading(false);
-  }, [props.thread, thread]);
-  //  useEffect(() => {
+  }, [props.thread]);
 
-  //  }, []);
   const handleOpenForm = (event) => {
     setOpenForm(!openForm);
+  };
+  const handleClickMenuItem = (event) => {
+    setSelectedThread(event.target.id);
   };
 
   const { window } = props;
@@ -87,27 +104,23 @@ const ThreadLayout = (props) => {
   const drawer = (
     <div>
       <Box sx={{ textAlign: "center" }}>
-        <Link to="/">
+        <Link to="/home">
           <img src={Logo} alt="" style={{ width: "150px", height: "57px" }} />
         </Link>
       </Box>
       <Divider />
       <List>
         {tags.map((tag, index) => (
-          <Link
-            key={index}
-            to={tag.shortName}
-            style={{ textDecoration: "none", color: "#FFFF" }}
-          >
             <ListItem key={index} disablePadding>
-              <ListItemButton>
-                <ListItemText
-                  component={Link}
-                  primary={`${tag.shortName} - ${tag.name}`}
-                />
-              </ListItemButton>{" "}
+              <ListItemButton
+                
+                to={"/threads" + tag.shortName}
+                onClick={handleClickMenuItem}
+                component={Link}
+              >
+                <ListItemText primary={`${tag.shortName} - ${tag.name}`} />
+              </ListItemButton>
             </ListItem>
-          </Link>
         ))}
       </List>
     </div>
@@ -116,6 +129,7 @@ const ThreadLayout = (props) => {
     window !== undefined ? () => window().document.body : undefined;
   return (
     <ThemeProvider theme={darkTheme}>
+      <motion.div layout />
       <Box sx={{ display: "flex" }}>
         <CssBaseline />
         <AppBar
@@ -141,7 +155,7 @@ const ThreadLayout = (props) => {
               gutterBottom
               sx={{ color: "#cccccc" }}
             >
-              {thread.shortName} - {thread.name}
+              {props.thread}
             </Typography>
           </Toolbar>
         </AppBar>
@@ -156,7 +170,7 @@ const ThreadLayout = (props) => {
             open={mobileOpen}
             onClose={handleDrawerToggle}
             ModalProps={{
-              keepMounted: true, // Better open performance on mobile.
+              keepMounted: true,
             }}
             sx={{
               display: { xs: "block", sm: "none" },
@@ -194,6 +208,8 @@ const ThreadLayout = (props) => {
                 onSubmit={handleSubmit}
                 sx={{ mt: 3 }}
                 width={"70%"}
+                id="new_thread"
+                hidden
               >
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
@@ -226,50 +242,7 @@ const ThreadLayout = (props) => {
                 </Button>
               </Box>
             ) : (
-              <></>
-            )}
-            {loading ? (
-              <>
-                <Skeleton
-                  variant="rectangular"
-                  width="100%"
-                  sx={{ borderRadius: "10px" }}
-                >
-                  <div style={{ paddingTop: "20%", mt: "20px" }} />
-                </Skeleton>
-                <Skeleton
-                  variant="rectangular"
-                  width="100%"
-                  sx={{ borderRadius: "10px" }}
-                >
-                  <div style={{ paddingTop: "20%", mt: "20px" }} />
-                </Skeleton>
-                <Skeleton
-                  variant="rectangular"
-                  width="100%"
-                  sx={{ borderRadius: "10px" }}
-                >
-                  <div style={{ paddingTop: "20%", mt: "20px" }} />
-                </Skeleton>
-                <Skeleton
-                  variant="rectangular"
-                  width="100%"
-                  sx={{ borderRadius: "10px" }}
-                >
-                  <div style={{ paddingTop: "20%", mt: "20px" }} />
-                </Skeleton>
-                <Skeleton
-                  variant="rectangular"
-                  width="100%"
-                  sx={{ borderRadius: "10px" }}
-                >
-                  <div style={{ paddingTop: "20%", mt: "20px" }} />
-                </Skeleton>
-              </>
-            ) : (
-              Posts.map((post, pos) => (
-                <ThreadCard title={post.heading} content={post.content} />
-              ))
+                <Outlet />
             )}
           </Stack>
         </Container>

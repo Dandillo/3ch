@@ -1,17 +1,11 @@
 import axios from "axios";
 
-const API_URL = "http://176.124.193.22/api/Post";
+const API_URL = "http://176.124.193.22/api/Comment";
 
- class PostService {
-   getPostsByTag(tagName, start, end) {
+ class CommentsService {
+   getCommentsByPostID(id, start, end) {
      return axios
-       .get(API_URL, {
-         params: {
-           start: start,
-           end: end,
-           shortTagName: tagName,
-         },
-       })
+       .get(API_URL+`/${id}/${start}/${end}`)
        .then((response) => {
          return response.data;
        })
@@ -41,5 +35,5 @@ const API_URL = "http://176.124.193.22/api/Post";
        .catch((err) => console.error(err));
    }
  }
-const postService = new PostService();
-export default postService;
+const commentsService = new CommentsService();
+export default commentsService;

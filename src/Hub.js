@@ -1,7 +1,7 @@
 import { signalR } from '@microsoft/signalr';
-export default class Hub{
+class Hub{
 
-    Hub(url = "http://http://176.124.193.22/CommentHub"){
+    initHub(url = "http://http://176.124.193.22/CommentHub"){
         this.connection = new signalR.HubConnectionBuilder().withUrl(url).build();
         this.connection
           .start()
@@ -37,3 +37,5 @@ export default class Hub{
         });
     }
 }
+let hub = new Hub();
+export default hub;
