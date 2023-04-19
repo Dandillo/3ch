@@ -62,20 +62,12 @@ const ThreadLayout = (props) => {
   const [loading, setLoading] = useState(false);
   useEffect(() => {
     setLoading(true);
-
     tagService.getTags(0, 100).then((tags) => setTags(tags));
-    console.log(props.thread);
-     tagService
-       .getTagByShortName(props.thread)
-       .then((tag) => {
-
-       });
-    
     postService
-      .getPostsByTag(props.thread.shortName, 0, 100)
+      .getPostsByTag(props.thread, 0, 100)
       .then((posts) => SetPosts(posts));
     setLoading(false);
-  }, [props.thread]);
+  }, []);
 
 
   const handleClickMenuItem = (event) => {

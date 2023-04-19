@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Card,
   CardHeader,
@@ -34,6 +34,7 @@ const formatDate = (dateUTC) => {
   let date = new Date(dateUTC);
   return date.toLocaleDateString("ru-RU", options);
 };
+let connected = false;
 const hubConnection = new signalR.HubConnectionBuilder()
   .configureLogging(signalR.LogLevel.Debug)
   .withUrl("http://176.124.193.22/CommentHub", {
@@ -41,51 +42,40 @@ const hubConnection = new signalR.HubConnectionBuilder()
     transport: signalR.HttpTransportType.WebSockets,
   })
   .build();
-hubConnection.start().then((a) => {});
+hubConnection.start().then(connected = true);
+const useMountEffect = (fun) => useEffect(fun, []);
 
 const PostLayout = (props) => {
   const { id } = useParams();
   const [postDate, setPostDate] = useState("");
   const [post, setPost] = useState([]);
+  const lastRef = useRef(null);
   const [loading, setLoading] = useState(false);
   const [comments, setComments] = useState([]);
   const [openForm, setOpenForm] = useState(false);
   const location = useLocation();
   const [currentTag, setCurrentTag] = useState(props.threadName);
+  hubConnection.invoke("AddToGroup", id);
+  const executeScroll = () =>
+    lastRef.current.scrollIntoView({ behavior: "smooth" }); 
 
   const handleSubmit = (event) => {
+    setLoading(true);
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    hubConnection.invoke(
-      "SendComment",
-      Number(id),
-      data.get("content"),
-      null,
-      null
-    );
-    commentsService.getCommentsByPostID(id, 0, 100).then((comments) => {
-      setComments(comments);
-    });
-    hubConnection.on("RecieveComment", (comment) => {
-      let commentsCopy = comments;
-      commentsCopy.push(comment);
-      setComments(commentsCopy);
-      setLoading(false);
-    });
-    handleOpenForm();
-  };
-  const handleOpenForm = () => {
+    if (connected)
+      hubConnection.invoke(
+        "SendComment",
+        Number(id),
+        data.get("content"),
+        null,
+        null
+      );
     setOpenForm(!openForm);
+   
   };
-  useEffect(() => {
-    hubConnection.invoke("AddToGroup", id);
 
-    hubConnection.on("RecieveComment", (comment) => {
-      let commentsCopy = comments;
-      comment.commentDate = formatDate(comment.commentDate);
-      commentsCopy.push(comment);
-      setComments(commentsCopy);
-    });
+  useEffect(() => {
     const localTag = JSON.parse(localStorage.getItem("CurrentThreadName"));
     
     setLoading(true);
@@ -96,31 +86,26 @@ const PostLayout = (props) => {
         name: post.tagName,
       });
     });
-    
-    commentsService.getCommentsByPostID(id, 0, 100).then((comments) => {
-      setComments(comments);
-      setLoading(false);
-    });
-  }, []);
-  useEffect(() => {
-    hubConnection.invoke("AddToGroup", id);
-    commentsService.getCommentsByPostID(id, 0, 100).then((comments) => {
-      setComments(comments);
-      setLoading(false);
-    });
+
     hubConnection.on("RecieveComment", (comment) => {
-      let commentsCopy = comments;
-      commentsCopy.push(comment);
-      setComments(commentsCopy);
+      let copy = comments;
+      copy.push(comment);
+      setComments(copy);
     });
-  }, [id]);
+    commentsService.getCommentsByPostID(id, 0, 100).then((comments) => {
+      setComments(comments);
+      setLoading(false);
+    });
+
+  }, [openForm]);
+  useEffect(() => {
+    executeScroll(); 
+  }, [comments]);
   const RenderCard = () => {
     return (
       <Box className="post-layout-container" sx={{ width: "100%" }}>
         <a href="#add-form">
-          <Button onClick={handleOpenForm} variant="contained">
-            Ответить в тред
-          </Button>
+          <Button variant="contained">Ответить в тред</Button>
         </a>
 
         <Stack spacing={2} sx={{ minWidth: "100%" }}>
@@ -159,49 +144,43 @@ const PostLayout = (props) => {
           </Card>
           {comments.length > 0 ? (
             comments.map((comment, i) => (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.5 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ type: "spring", stiffness: 100 }}
+              <Card
+                sx={{
+                  borderRadius: "10px",
+                  maxWidth: "80%",
+                }}
+                key={comment.id}
               >
-                <Card
-                  sx={{
-                    borderRadius: "10px",
-                    maxWidth: "80%",
-                  }}
-                  key={comment.id}
-                >
-                  <CardHeader
-                    title={
-                      <Box>
-                        <Typography variant="h5" className="post-title">
-                          <Box>
-                            <Typography
-                              variant="body1"
-                              component={"span"}
-                              sx={{ paddingLeft: "10px" }}
-                            >
-                              Аноним {formatDate(comment.commentDate)} №
-                              {comment.id}
+                <CardHeader
+                  title={
+                    <Box>
+                      <Typography variant="h5" className="post-title">
+                        <Box>
+                          <Typography
+                            variant="body1"
+                            component={"span"}
+                            sx={{ paddingLeft: "10px" }}
+                          >
+                            Аноним {formatDate(comment.commentDate)} №
+                            {comment.id}
+                          </Typography>
+                          <Divider />
+                          <CardContent sx={{ textAlign: "justify" }}>
+                            <Typography variant="body1">
+                              {comment.comment}
                             </Typography>
-                            <Divider />
-                            <CardContent sx={{ textAlign: "justify" }}>
-                              <Typography variant="body1">
-                                {comment.comment}
-                              </Typography>
-                            </CardContent>
-                          </Box>
-                        </Typography>
-                      </Box>
-                    }
-                  />
+                          </CardContent>
+                        </Box>
+                      </Typography>
+                    </Box>
+                  }
+                />
 
-                  <Divider />
-                  <CardContent sx={{ textAlign: "justify" }}>
-                    <Typography variant="body1">{comment.content}</Typography>
-                  </CardContent>
-                </Card>
-              </motion.div>
+                <Divider />
+                <CardContent sx={{ textAlign: "justify" }}>
+                  <Typography variant="body1">{comment.content}</Typography>
+                </CardContent>
+              </Card>
             ))
           ) : (
             <Card
@@ -223,12 +202,12 @@ const PostLayout = (props) => {
             noValidate
             onSubmit={handleSubmit}
             sx={{ mt: 3 }}
-            width={"70%"}
+            width={"80%"}
             id="new_thread"
           >
             <Grid id="add-form" container spacing={2}>
               <Grid item xs={12}>
-                <Typography xs={15} variant="h6">
+                <Typography xs={12} variant="h6">
                   Ответить в тред
                 </Typography>
 
@@ -243,6 +222,7 @@ const PostLayout = (props) => {
               </Grid>
             </Grid>
             <Button
+              ref={lastRef}
               type="submit"
               fullWidth
               variant="contained"

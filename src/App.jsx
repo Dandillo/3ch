@@ -16,7 +16,6 @@ function App() {
     shortName: "thread",
   });
 
- 
   let location = useLocation();
   useEffect(() => {
     tagService.getTags(0, 100).then((tags) => setTags(tags));
@@ -48,9 +47,7 @@ function App() {
 
               <Route
                 path={`${tag.shortName}/post/:id`}
-                element={
-                  <PostLayout setThread={setThread} />
-                }
+                element={<PostLayout setThread={setThread} />}
               />
             </Route>
           ))}

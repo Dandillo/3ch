@@ -82,36 +82,38 @@ const ThreadCard = ({ title, content, date, id }) => {
         </Card>
 
         {comments.length > 0 ? (
-          comments.map((comment, i) => (
-            <Card
-              sx={{
-                borderRadius: "10px",
-                maxWidth: "70%",
-              }}
-              key={i}
-            >
-              <CardHeader
-                title={
-                  <Box>
-                    <Typography variant="h5" className="post-title">
-                      <Typography
-                        variant="body1"
-                        component={"span"}
-                        sx={{ paddingLeft: "10px" }}
-                      >
-                        Аноним №{comment.id}
+          comments
+            .slice(comments.length - 3, comments.length)
+            .map((comment, i) => (
+              <Card
+                sx={{
+                  borderRadius: "10px",
+                  maxWidth: "70%",
+                }}
+                key={i}
+              >
+                <CardHeader
+                  title={
+                    <Box>
+                      <Typography variant="h5" className="post-title">
+                        <Typography
+                          variant="body1"
+                          component={"span"}
+                          sx={{ paddingLeft: "10px" }}
+                        >
+                          Аноним №{comment.id}
+                        </Typography>
                       </Typography>
-                    </Typography>
-                  </Box>
-                }
-              />
+                    </Box>
+                  }
+                />
 
-              <Divider />
-              <CardContent sx={{ textAlign: "justify" }}>
-                <Typography variant="body1">{comment.comment}</Typography>
-              </CardContent>
-            </Card>
-          ))
+                <Divider />
+                <CardContent sx={{ textAlign: "justify" }}>
+                  <Typography variant="body1">{comment.comment}</Typography>
+                </CardContent>
+              </Card>
+            ))
         ) : (
           <Card
             sx={{
