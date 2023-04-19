@@ -30,7 +30,12 @@ function App() {
         <Route
           path="/threads"
           element={
-            <ThreadLayout thread={`/${thread.shortName.charAt(0).toUpperCase() + thread.shortName.slice(1)}/ - ${thread.name}`} />
+            <ThreadLayout
+              thread={`/${
+                thread.shortName.charAt(0).toUpperCase() +
+                thread.shortName.slice(1)
+              }/ - ${thread.name}`}
+            />
           }
         >
           {tags.map((tag, pos) => (
@@ -38,21 +43,13 @@ function App() {
               <Route
                 key={pos}
                 path={`${tag.shortName}`}
-                element={
-                  <Posts
-                    thread={tag}
-                    setThreadName={setThread}
-                  />
-                }
+                element={<Posts thread={tag} setThreadName={setThread} />}
               />
 
               <Route
                 path={`${tag.shortName}/post/:id`}
                 element={
-                  <PostLayout
-                    threadName={thread}
-                    setThreadName={setThread}
-                  />
+                  <PostLayout setThread={setThread} />
                 }
               />
             </Route>

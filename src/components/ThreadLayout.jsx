@@ -54,9 +54,7 @@ const ThreadLayout = (props) => {
  
   const [tags, setTags] = useState([]);
   const location = useLocation();
-  const [threadName, setThreadName] = useState(
-    ''
-  );
+
  
   const [Posts, SetPosts] = useState([]);
   const [selectedThread, setSelectedThread] = useState("");
@@ -64,7 +62,6 @@ const ThreadLayout = (props) => {
   const [loading, setLoading] = useState(false);
   useEffect(() => {
     setLoading(true);
-    // localStorage.setItem("CurrentThreadName", JSON.stringify(props.thread));
 
     tagService.getTags(0, 100).then((tags) => setTags(tags));
     console.log(props.thread);
@@ -72,7 +69,6 @@ const ThreadLayout = (props) => {
        .getTagByShortName(props.thread)
        .then((tag) => {
 
-         setThreadName(tag.shortName)
        });
     
     postService

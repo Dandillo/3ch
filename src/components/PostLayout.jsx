@@ -50,14 +50,19 @@ const PostLayout = (props) => {
   const [loading, setLoading] = useState(false);
   const [comments, setComments] = useState([]);
   const [openForm, setOpenForm] = useState(false);
-  const [buttonName, setButtonName] = useState("Ответить в тред");
   const location = useLocation();
   const [currentTag, setCurrentTag] = useState(props.threadName);
 
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    hubConnection.invoke("SendComment", Number(id), data.get("content"), 7);
+    hubConnection.invoke(
+      "SendComment",
+      Number(id),
+      data.get("content"),
+      null,
+      null
+    );
     commentsService.getCommentsByPostID(id, 0, 100).then((comments) => {
       setComments(comments);
     });
@@ -71,56 +76,148 @@ const PostLayout = (props) => {
   };
   const handleOpenForm = () => {
     setOpenForm(!openForm);
-    setButtonName(!openForm ? "Закрыть форму" : "Ответить в тред");
   };
   useEffect(() => {
-    
     hubConnection.invoke("AddToGroup", id);
 
     hubConnection.on("RecieveComment", (comment) => {
       let commentsCopy = comments;
+      comment.commentDate = formatDate(comment.commentDate);
       commentsCopy.push(comment);
       setComments(commentsCopy);
     });
-    console.log(comments);
-    localStorage.setItem(
-      "thread-name",
-      JSON.stringify(currentTag)
-    );
- 
+    const localTag = JSON.parse(localStorage.getItem("CurrentThreadName"));
     
-    props.setThreadName(currentTag);
     setLoading(true);
     postService.getPostById(id).then((post) => {
       setPost(post);
-      setPostDate(formatDate(post.date));
+      props.setThread({
+        shortName: post.tagShortName,
+        name: post.tagName,
+      });
     });
+    
     commentsService.getCommentsByPostID(id, 0, 100).then((comments) => {
       setComments(comments);
       setLoading(false);
     });
   }, []);
   useEffect(() => {
-   
-      hubConnection.invoke("AddToGroup", id);
-
-      hubConnection.on("RecieveComment", (comment) => {
-        let commentsCopy = comments;
-        commentsCopy.push(comment);
-        setComments(commentsCopy);
-      });
-      commentsService.getCommentsByPostID(id, 0, 100).then((comments) => {
-        setComments(comments);
-        setLoading(false);
-      });
-    }, [openForm]);
+    hubConnection.invoke("AddToGroup", id);
+    commentsService.getCommentsByPostID(id, 0, 100).then((comments) => {
+      setComments(comments);
+      setLoading(false);
+    });
+    hubConnection.on("RecieveComment", (comment) => {
+      let commentsCopy = comments;
+      commentsCopy.push(comment);
+      setComments(commentsCopy);
+    });
+  }, [id]);
   const RenderCard = () => {
     return (
       <Box className="post-layout-container" sx={{ width: "100%" }}>
-        <Button onClick={handleOpenForm} variant="contained">
-          {buttonName}
-        </Button>
-        {openForm ? (
+        <a href="#add-form">
+          <Button onClick={handleOpenForm} variant="contained">
+            Ответить в тред
+          </Button>
+        </a>
+
+        <Stack spacing={2} sx={{ minWidth: "100%" }}>
+          <Card sx={{ borderRadius: "10px", minWidth: "100%" }}>
+            <CardHeader
+              title={
+                <Box>
+                  <Typography variant="h5">
+                    <span className="postLayout_heading"> {post.heading}</span>
+
+                    <Typography
+                      variant="body1"
+                      component={"span"}
+                      sx={{ paddingLeft: "10px" }}
+                    >
+                      Аноним {formatDate(post.date)} №{id}
+                    </Typography>
+                  </Typography>
+                </Box>
+              }
+            />
+            <Divider />
+            <CardContent sx={{ textAlign: "justify" }}>
+              <Typography
+                variant="body1"
+                sx={{
+                  wordBreak: "break-all",
+                }}
+              >
+                {post.content}
+              </Typography>
+            </CardContent>
+            <CardActions sx={{ justifyContent: "flex-end" }}>
+              <IconButton></IconButton>
+            </CardActions>
+          </Card>
+          {comments.length > 0 ? (
+            comments.map((comment, i) => (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ type: "spring", stiffness: 100 }}
+              >
+                <Card
+                  sx={{
+                    borderRadius: "10px",
+                    maxWidth: "80%",
+                  }}
+                  key={comment.id}
+                >
+                  <CardHeader
+                    title={
+                      <Box>
+                        <Typography variant="h5" className="post-title">
+                          <Box>
+                            <Typography
+                              variant="body1"
+                              component={"span"}
+                              sx={{ paddingLeft: "10px" }}
+                            >
+                              Аноним {formatDate(comment.commentDate)} №
+                              {comment.id}
+                            </Typography>
+                            <Divider />
+                            <CardContent sx={{ textAlign: "justify" }}>
+                              <Typography variant="body1">
+                                {comment.comment}
+                              </Typography>
+                            </CardContent>
+                          </Box>
+                        </Typography>
+                      </Box>
+                    }
+                  />
+
+                  <Divider />
+                  <CardContent sx={{ textAlign: "justify" }}>
+                    <Typography variant="body1">{comment.content}</Typography>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))
+          ) : (
+            <Card
+              sx={{
+                borderRadius: "10px",
+                width: "30%",
+                height: "50px",
+                display: "flex",
+                placeItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Typography variant="body3">Еще никто не ответил</Typography>
+            </Card>
+          )}
+
           <Box
             component="form"
             noValidate
@@ -129,11 +226,15 @@ const PostLayout = (props) => {
             width={"70%"}
             id="new_thread"
           >
-            <Grid container spacing={2}>
+            <Grid id="add-form" container spacing={2}>
               <Grid item xs={12}>
+                <Typography xs={15} variant="h6">
+                  Ответить в тред
+                </Typography>
+
                 <TextField
                   multiline
-                  rows={10}
+                  rows={3}
                   fullWidth
                   id="content"
                   label="Комментарий"
@@ -150,88 +251,6 @@ const PostLayout = (props) => {
               Ответить в тред
             </Button>
           </Box>
-        ) : (
-          <></>
-        )}
-        <Stack spacing={2} sx={{ minWidth: "100%" }}>
-          <Card sx={{ borderRadius: "10px", minWidth: "100%" }}>
-            <CardHeader
-              title={
-                <Box>
-                  <Typography variant="h5">
-                    <span className="postLayout_heading"> {post.heading}</span>
-
-                    <Typography
-                      variant="body1"
-                      component={"span"}
-                      sx={{ paddingLeft: "10px" }}
-                    >
-                      Аноним {postDate} №{id}
-                    </Typography>
-                  </Typography>
-                </Box>
-              }
-            />
-            <Divider />
-            <CardContent sx={{ textAlign: "justify" }}>
-              <Typography variant="body1">{post.content}</Typography>
-            </CardContent>
-            <CardActions sx={{ justifyContent: "flex-end" }}>
-              <IconButton></IconButton>
-            </CardActions>
-          </Card>
-          {comments.length > 0 ? (
-            comments.map((comment, i) => (
-              <Card
-                sx={{
-                  borderRadius: "10px",
-                  maxWidth: "80%",
-                }}
-              >
-                <CardHeader
-                  title={
-                    <Box>
-                      <Typography variant="h5" className="post-title">
-                        <Box>
-                          <Typography
-                            variant="body1"
-                            component={"span"}
-                            sx={{ paddingLeft: "10px" }}
-                          >
-                            Аноним №{comment.id}
-                          </Typography>
-                          <Divider />
-                          <CardContent sx={{ textAlign: "justify" }}>
-                            <Typography variant="body1">
-                              {comment.comment}
-                            </Typography>
-                          </CardContent>
-                        </Box>
-                      </Typography>
-                    </Box>
-                  }
-                />
-
-                <Divider />
-                <CardContent sx={{ textAlign: "justify" }}>
-                  <Typography variant="body1">{comment.content}</Typography>
-                </CardContent>
-              </Card>
-            ))
-          ) : (
-            <Card
-              sx={{
-                borderRadius: "10px",
-                width: "30%",
-                height: "50px",
-                display: "flex",
-                placeItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Typography variant="body3">Еще никто не ответил</Typography>
-            </Card>
-          )}
         </Stack>
       </Box>
     );

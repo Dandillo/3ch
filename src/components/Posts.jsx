@@ -13,6 +13,8 @@ const Posts = (props) => {
   const [tagId, setTagId] = useState("");
 
   useEffect(() => {
+    localStorage.setItem("CurrentThreadName", JSON.stringify(props.thread));
+
     props.setThreadName(props.thread);
     setLoading(true);
     console.log(props.thread.shortName);

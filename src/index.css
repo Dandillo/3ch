@@ -8,7 +8,12 @@ body {
   background-color: #15202b;
 
 }
-
+html {
+  scroll-behavior: smooth;
+}
+a {
+  text-decoration: none;
+}
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;

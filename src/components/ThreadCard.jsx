@@ -70,7 +70,14 @@ const ThreadCard = ({ title, content, date, id }) => {
 
           <Divider />
           <CardContent sx={{ textAlign: "justify" }}>
-            <Typography variant="body1">{content}</Typography>
+            <Typography
+              variant="body1"
+              sx={{
+                wordBreak: "break-all",
+              }}
+            >
+              {content}
+            </Typography>
           </CardContent>
         </Card>
 
@@ -87,15 +94,13 @@ const ThreadCard = ({ title, content, date, id }) => {
                 title={
                   <Box>
                     <Typography variant="h5" className="post-title">
-                   
-                        <Typography
-                          variant="body1"
-                          component={"span"}
-                          sx={{ paddingLeft: "10px" }}
-                        >
+                      <Typography
+                        variant="body1"
+                        component={"span"}
+                        sx={{ paddingLeft: "10px" }}
+                      >
                         Аноним №{comment.id}
-                        </Typography>
-               
+                      </Typography>
                     </Typography>
                   </Box>
                 }
