@@ -57,40 +57,31 @@ const ThreadLayout = (props) => {
   const [threadName, setThreadName] = useState(
     ''
   );
+ 
   const [Posts, SetPosts] = useState([]);
   const [selectedThread, setSelectedThread] = useState("");
-  const [openForm, setOpenForm] = useState(false);
+
   const [loading, setLoading] = useState(false);
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    fetch("http://176.124.193.22/api/Post/CreatePost", {
-      body: data,
-      method: "POST",
-      headers: {
-        Accept: "text/plain",
-      },
-    })
-      .then((response) => console.log(response))
-      .catch((error) => console.log(error.response));
-  };
   useEffect(() => {
     setLoading(true);
-    // props.hubConnection.on("RecieveComment", (message) => {
-    //   list.push(message);
-    // });
+    // localStorage.setItem("CurrentThreadName", JSON.stringify(props.thread));
+
     tagService.getTags(0, 100).then((tags) => setTags(tags));
     console.log(props.thread);
-    setThreadName(props.thread);
+     tagService
+       .getTagByShortName(props.thread)
+       .then((tag) => {
+
+         setThreadName(tag.shortName)
+       });
+    
     postService
       .getPostsByTag(props.thread.shortName, 0, 100)
       .then((posts) => SetPosts(posts));
     setLoading(false);
   }, [props.thread]);
 
-  const handleOpenForm = (event) => {
-    setOpenForm(!openForm);
-  };
+
   const handleClickMenuItem = (event) => {
     setSelectedThread(event.target.id);
   };
@@ -104,23 +95,26 @@ const ThreadLayout = (props) => {
   const drawer = (
     <div>
       <Box sx={{ textAlign: "center" }}>
-        <Link to="/home">
+        <Link to="/">
           <img src={Logo} alt="" style={{ width: "150px", height: "57px" }} />
         </Link>
       </Box>
       <Divider />
       <List>
         {tags.map((tag, index) => (
-            <ListItem key={index} disablePadding>
-              <ListItemButton
-                
-                to={"/threads" + tag.shortName}
-                onClick={handleClickMenuItem}
-                component={Link}
-              >
-                <ListItemText primary={`${tag.shortName} - ${tag.name}`} />
-              </ListItemButton>
-            </ListItem>
+          <ListItem key={index} disablePadding>
+            <ListItemButton
+              to={"/threads/" + tag.shortName}
+              onClick={handleClickMenuItem}
+              component={Link}
+            >
+              <ListItemText
+                primary={`/${
+                  tag.shortName.charAt(0).toUpperCase() + tag.shortName.slice(1)
+                }/ - ${tag.name}`}
+              />
+            </ListItemButton>
+          </ListItem>
         ))}
       </List>
     </div>
@@ -198,52 +192,9 @@ const ThreadLayout = (props) => {
         </Box>
         <Container sx={{ alignItems: "center", mt: "50px" }}>
           <Stack pt={5} justifyItems="center" alignItems="center" spacing={5}>
-            <Button onClick={handleOpenForm} variant="contained">
-              Создать тред
-            </Button>
-            {openForm ? (
-              <Box
-                component="form"
-                noValidate
-                onSubmit={handleSubmit}
-                sx={{ mt: 3 }}
-                width={"70%"}
-                id="new_thread"
-                hidden
-              >
-                <Grid container spacing={2}>
-                  <Grid item xs={12}>
-                    <TextField
-                      required
-                      fullWidth
-                      id="heading"
-                      label="Тема"
-                      name="heading"
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      multiline
-                      rows={10}
-                      fullWidth
-                      id="content"
-                      label="Комментарий"
-                      name="content"
-                    />
-                  </Grid>
-                </Grid>
-                <Button
-                  type="submit"
-                  fullWidth
-                  variant="contained"
-                  sx={{ mt: 3, mb: 2 }}
-                >
-                  Создать тред
-                </Button>
-              </Box>
-            ) : (
+    
                 <Outlet />
-            )}
+
           </Stack>
         </Container>
       </Box>

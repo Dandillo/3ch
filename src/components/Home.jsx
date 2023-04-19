@@ -76,7 +76,7 @@ const Home = function () {
             {tags.map((tag, pos) => (
               <Grid item key={pos} className="w-100">
                 <Link
-                  to={'/threads'+tag.shortName}
+                  to={'/threads/'+tag.shortName}
                   style={({ textDecoration: "none" }, boxStyle)}
                   onMouseEnter={handleMouseEnter}
                   onMouseLeave={handleMouseLeave}
