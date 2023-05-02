@@ -19,6 +19,7 @@ import {
   Dialog,
   Slide,
 } from "@mui/material/";
+import LoadingButton from '@mui/lab/LoadingButton';
 
 import CloseIcon from "@mui/icons-material/Close";
 import { TransitionProps } from "@mui/material/transitions";
@@ -73,6 +74,8 @@ const PostLayout = (props) => {
   const handleClose = () => {
     setOpen(false);
   };
+  const [fileLoading, setFileLoading] = useState(false);
+  const [mediaID, setMediaID] = useState(0);
   const location = useLocation();
   const [currentTag, setCurrentTag] = useState(props.threadName);
   hubConnection.invoke("AddToGroup", id);
@@ -82,8 +85,11 @@ const PostLayout = (props) => {
     const file = event.target.files[0];
     let formFile = new FormData();
     formFile.append('file',file);
-    
-    mediaService.SendImg(formFile).then((response) => console.log(response.id));
+    setFileLoading(true);
+    mediaService.SendImg(formFile).then((response) => {
+      setFileLoading(false);
+      setMediaID(response.mediaID)
+    });
   };
   const handleSubmit = (event) => {
     setLoading(true);
@@ -95,7 +101,7 @@ const PostLayout = (props) => {
         "SendComment",
         Number(id),
         data.get("content"),
-        null,
+        mediaID !== 0 ? mediaID : null,
         null
       );
     setOpenForm(!openForm);
@@ -293,13 +299,22 @@ const PostLayout = (props) => {
                   label="Комментарий"
                   name="content"
                 />
-                <TextField
-                  type="file"
-                  id="img"
-                  onChange={handleFileChange}
-                  accept="image"
-                  hidden
-                />
+                <LoadingButton
+                  variant="contained"
+                  component="label"
+                  sx={{ marginTop: "20px" }}
+                  loading={fileLoading}
+                >
+                  Загрузить
+                  <input
+                    hidden
+                    accept="image/*"
+                    multiple
+                    type="file"
+                    id="img"
+                    onChange={handleFileChange}
+                  />
+                </LoadingButton>
               </Grid>
             </Grid>
             <Button
