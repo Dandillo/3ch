@@ -14,7 +14,14 @@ import {
   TextField,
   Button,
   Grid,
+  AppBar,
+  Toolbar,
+  Dialog,
+  Slide,
 } from "@mui/material/";
+
+import CloseIcon from "@mui/icons-material/Close";
+import { TransitionProps } from "@mui/material/transitions";
 import { Link, useParams, useLocation } from "react-router-dom";
 import * as signalR from "@microsoft/signalr";
 import { motion } from "framer-motion";
@@ -22,6 +29,10 @@ import commentsService from "../services/comment.service";
 
 import postService from "../services/post.service";
 import tagService from "../services/tags.service";
+import mediaService from "../services/media.service";
+const Transition = React.forwardRef(function Transition(props, ref) {
+  return <Slide direction="up" ref={ref} {...props} />;
+});
 const formatDate = (dateUTC) => {
   let options = {
     weekday: "long",
@@ -42,7 +53,7 @@ const hubConnection = new signalR.HubConnectionBuilder()
     transport: signalR.HttpTransportType.WebSockets,
   })
   .build();
-hubConnection.start().then(connected = true);
+hubConnection.start().then((connected = true));
 const useMountEffect = (fun) => useEffect(fun, []);
 
 const PostLayout = (props) => {
@@ -53,15 +64,31 @@ const PostLayout = (props) => {
   const [loading, setLoading] = useState(false);
   const [comments, setComments] = useState([]);
   const [openForm, setOpenForm] = useState(false);
+  const [open, setOpen] = useState(false);
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
   const location = useLocation();
   const [currentTag, setCurrentTag] = useState(props.threadName);
   hubConnection.invoke("AddToGroup", id);
   const executeScroll = () =>
-    lastRef.current.scrollIntoView({ behavior: "smooth" }); 
-
+    lastRef.current.scrollIntoView({ behavior: "smooth" });
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    let formFile = new FormData();
+    formFile.append('file',file);
+    
+    mediaService.SendImg(formFile).then((response) => console.log(response.id));
+  };
   const handleSubmit = (event) => {
     setLoading(true);
     event.preventDefault();
+
     const data = new FormData(event.currentTarget);
     if (connected)
       hubConnection.invoke(
@@ -72,12 +99,11 @@ const PostLayout = (props) => {
         null
       );
     setOpenForm(!openForm);
-   
   };
 
   useEffect(() => {
     const localTag = JSON.parse(localStorage.getItem("CurrentThreadName"));
-    
+
     setLoading(true);
     postService.getPostById(id).then((post) => {
       setPost(post);
@@ -96,12 +122,12 @@ const PostLayout = (props) => {
       setComments(comments);
       setLoading(false);
     });
-
   }, [openForm]);
   useEffect(() => {
-    executeScroll(); 
+    executeScroll();
   }, [comments]);
   const RenderCard = () => {
+    const url = "http://176.124.193.22";
     return (
       <Box className="post-layout-container" sx={{ width: "100%" }}>
         <a href="#add-form">
@@ -166,6 +192,55 @@ const PostLayout = (props) => {
                           </Typography>
                           <Divider />
                           <CardContent sx={{ textAlign: "justify" }}>
+                            {comment.img ? (
+                              <>
+                                <Box
+                                  sx={{
+                                    background: `url(${url}${comment.img}) center center / contain no-repeat`,
+                                    cursor: "pointer",
+                                  }}
+                                  width={"300px"}
+                                  height={"500px"}
+                                  alt="commentLogo"
+                                  onClick={() => {
+                                    setOpen(!open);
+                                  }}
+                                />
+                                <Dialog
+                                  fullScreen
+                                  open={open}
+                                  onClose={handleClose}
+                                  TransitionComponent={Transition}
+                                >
+                                  <AppBar sx={{ position: "relative" }}>
+                                    <Toolbar>
+                                      <IconButton
+                                        edge="start"
+                                        color="inherit"
+                                        onClick={handleClose}
+                                        aria-label="close"
+                                      >
+                                        <CloseIcon />
+                                      </IconButton>
+                                    </Toolbar>
+                                  </AppBar>
+                                  <Box
+                                    sx={{
+                                      background: `url(${url}${comment.img}) center center / contain no-repeat`,
+                                    }}
+                                    width={"100%"}
+                                    height={"100%"}
+                                    alt="commentLogo"
+                                    onClick={() => {
+                                      setOpen(!open);
+                                    }}
+                                  />
+                                </Dialog>
+                              </>
+                            ) : (
+                              <></>
+                            )}
+
                             <Typography variant="body1">
                               {comment.comment}
                             </Typography>
@@ -210,7 +285,6 @@ const PostLayout = (props) => {
                 <Typography xs={12} variant="h6">
                   Ответить в тред
                 </Typography>
-
                 <TextField
                   multiline
                   rows={3}
@@ -218,6 +292,13 @@ const PostLayout = (props) => {
                   id="content"
                   label="Комментарий"
                   name="content"
+                />
+                <TextField
+                  type="file"
+                  id="img"
+                  onChange={handleFileChange}
+                  accept="image"
+                  hidden
                 />
               </Grid>
             </Grid>

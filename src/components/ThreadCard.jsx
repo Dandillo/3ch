@@ -27,12 +27,14 @@ const formatDate = (dateUTC) => {
   return date.toLocaleDateString("ru-RU", options);
 };
 const ThreadCard = ({ title, content, date, id }) => {
+    const url = "http://176.124.193.22";
+
   const [postDate, setPostDate] = useState("");
   const [comments, setComments] = useState([]);
   useEffect(() => {
     setPostDate(formatDate(date));
     commentsService
-      .getCommentsByPostID(id, 0, 100)
+      .getCommentsByPostID(id, 0, 1000)
       .then((comments) => setComments(comments));
   }, []);
   return (
@@ -110,6 +112,7 @@ const ThreadCard = ({ title, content, date, id }) => {
 
                 <Divider />
                 <CardContent sx={{ textAlign: "justify" }}>
+                  {comment.img ? <img src={`${url}${comment.img}`} alt="" /> : <></>}
                   <Typography variant="body1">{comment.comment}</Typography>
                 </CardContent>
               </Card>
