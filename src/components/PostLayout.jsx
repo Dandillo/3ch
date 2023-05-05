@@ -87,8 +87,9 @@ const PostLayout = (props) => {
     formFile.append('file',file);
     setFileLoading(true);
     mediaService.SendImg(formFile).then((response) => {
+      setMediaID(response.id);
       setFileLoading(false);
-      setMediaID(response.mediaID)
+      
     });
   };
   const handleSubmit = (event) => {
@@ -202,11 +203,11 @@ const PostLayout = (props) => {
                               <>
                                 <Box
                                   sx={{
-                                    background: `url(${url}${comment.img}) center center / contain no-repeat`,
+                                    background: `url(${url}${comment.img}) center center / cover no-repeat`,
                                     cursor: "pointer",
                                   }}
                                   width={"300px"}
-                                  height={"500px"}
+                                  height={"300px"}
                                   alt="commentLogo"
                                   onClick={() => {
                                     setOpen(!open);
